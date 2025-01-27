@@ -1,0 +1,67 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [develop]
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Install Linters
+        run: |
+          npm install -g htmlhint stylelint stylelint-config-standard
+
+      - name: Configure HTMLHint
+        run: |
+          echo '{
+            "tagname-lowercase": true,
+            "attr-lowercase": true,
+            "alt-require": true,
+            "id-unique": true,
+            "tag-pair": true
+          }' > .htmlhintrc
+
+      - name: Lint HTML files
+        run: htmlhint "**/*.html"
+
+      - name: Configure Stylelint
+        run: |
+          echo '{
+            "extends": "stylelint-config-standard",
+            "rules": {
+              "declaration-block-no-duplicate-properties": true,
+              "no-duplicate-selectors": true,
+              "property-case": "lower",
+              "value-keyword-case": "lower",
+              "selector-type-case": "lower",
+              "block-no-empty": true
+            }
+          }' > .stylelintrc.json
+
+      - name: Lint CSS files
+        run: stylelint "**/*.css"
+
+  build:
+    needs: linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Install Parcel
+        run: npm install -g parcel
+
+      - name: Build static site
+        run: parcel build index.html
