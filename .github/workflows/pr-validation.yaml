@@ -67,4 +67,4 @@ jobs:
         run: npm install -g parcel
 
       - name: Build static site
-        run: parcel build index.html
+        run: parcel build src/index.html
